@@ -1,0 +1,35 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: secret
+    volumes: # подключить volume чтобы данные не терялись при рестартах
+      - db_data:/var/lib/postgresql/data
+    healthcheck: # healthcheck в db и condition в backend чтоб Backend не стартует раньше готовности БД
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    environment:
+      DB_HOST: db #db вместо localhost
+      DB_NAME: app
+      DB_USER: app
+      DB_PASSWORD: secret
+    depends_on:
+      db:
+        condition: service_healthy
+    network_mode: "service:frontend"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+
+volumes: # volume для БД
+  db_data:
