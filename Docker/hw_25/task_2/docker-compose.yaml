@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+  web:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx-conf/index.html:/usr/share/nginx/html/index.html:ro
+    # В версии 3 'links' больше не требуется, так как компоуз автоматически создает сеть, и сервисы доступны по их именам.
+    depends_on:
+      - db
